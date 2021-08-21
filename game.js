@@ -9,8 +9,11 @@ mover.style.position = 'absolute'
 
 })
 
+
 window.addEventListener('keydown' , (e) =>{
-  
+    keysPressed[e.key] = true;
+
+
     switch(e.key){
         case 'ArrowUp': 
             mover.style.top = parseInt(mover.style.top) - modifier + 'px'; 
@@ -23,6 +26,34 @@ window.addEventListener('keydown' , (e) =>{
             break
         case 'ArrowLeft': 
             mover.style.left = parseInt(mover.style.left) - modifier + 'px'; 
-            break
+            break   
+        }
+})
+
+// DIAGONAL DIRECTION CONTROL FOR PLAYER 
+let keysPressed = {}
+window.addEventListener('keydown', (event) =>{
+keysPressed[event.key] = true;
+if (keysPressed['ArrowDown'] && event.key == 'ArrowRight') {
+            mover.style.left = parseInt(mover.style.left)  + modifier + 'px';
+            mover.style.top = parseInt(mover.style.top) + modifier + 'px';
+        }
+else if (keysPressed['ArrowUp'] && event.key == 'ArrowRight') {
+            mover.style.left = parseInt(mover.style.left)  + modifier + 'px';
+            mover.style.top = parseInt(mover.style.top) - modifier + 'px';
+        }
+else if (keysPressed['ArrowDown'] && event.key == 'ArrowLeft') {
+            mover.style.left = parseInt(mover.style.left)  - modifier + 'px';
+            mover.style.top = parseInt(mover.style.top) + modifier + 'px';
+        }
+else if (keysPressed['ArrowLeft'] && event.key == 'ArrowUp') {
+            mover.style.left = parseInt(mover.style.left)  - modifier + 'px';
+            mover.style.top = parseInt(mover.style.top) - modifier + 'px';
     }
 })
+
+
+document.addEventListener('keyup', (event) => {
+    delete keysPressed[event.key];
+ });
+
