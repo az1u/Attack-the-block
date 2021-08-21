@@ -9,7 +9,7 @@ mover.style.position = 'absolute'
 
 })
 
-window.addEventListener('keyup' , (e) =>{
+window.addEventListener('keydown' , (e) =>{
   
     switch(e.key){
         case 'ArrowUp': 
