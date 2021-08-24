@@ -20,15 +20,23 @@ class Vector{
 }
 class Barrier{
     constructor(width, height){
-        this.pos = Vector.random(0, width, 0, height)
-        this.vel= Vector.random(0,0);
-        this.acc = new Vector( 0,0)
-
+        this.pos = Vector.random(1080, 1080, 0, height)
+        this.vel= Vector.random(-0.1, 0, 0, 0);
+        this.acc = new Vector(-.01, 0);
+        this.height = 10
+        this.width = 25 
     }
     update(){
         this.pos.add(this.vel);
         this.vel.add(this.acc);
         this.acc*0;
+
+        //creates wrap around for 
+        if( this.pos.x < 0){
+            this.pos.x = 1080
+            this.vel= Vector.random(-0.1, 0, 0, 0);
+            this.acc = new Vector(-.01, 0);
+        }
     }
 }
 class Canvas{
@@ -50,7 +58,7 @@ class Canvas{
         for(let i = 0; i < NUM_BARRIERS; i++){
             this.barrier.push(new Barrier(
             randomNumberBetween(0, this.canvas.width),
-            randomNumberBetween(0, this.canvas.height)
+            500
             ))
         }
     }
@@ -59,9 +67,9 @@ class Canvas{
 
         for(let block of this.barrier){ 
             block.update();
-            this.ctx.fillStyle = 'rgba(255,255, 255, 1)';
+            this.ctx.fillStyle = '#ff0000';
             this.ctx.beginPath();
-            this.ctx.fillRect( 10, 10, 20 , 5 );
+            this.ctx.fillRect( block.pos.x, block.pos.y , block.width , block.height );
             this.ctx.fill();
         }
         requestAnimationFrame(() => this.update());
