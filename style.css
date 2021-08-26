@@ -1,8 +1,8 @@
-.mover{
+/* .mover{
     height: 30px;
     width: 30px;
     background-color: green;
-}
+} */
 .playing_field{
     position: fixed;
     height: 75%;

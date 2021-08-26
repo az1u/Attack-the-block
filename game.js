@@ -7,9 +7,20 @@ class Vector{
         this.x = x;
         this.y = y;
     }
-    add(vector){
-        this.x += vector.x
-        this.y += vector.y
+    static add(vector1, vector2){
+        return new Vector(vector1.x +vector2.x, vector1.y +vector2.y)
+    }
+    static mult(vector, scalar){
+        return new Vector( vector.x*scalar, vector.y*scalar)
+    }
+    static sub(vector1, vector2){
+        return   new Vector(vector1.x- vector2.x, vector1.y-vector2.y)
+    }
+    static div(vector, scalar){
+        return new Vector( vector.x/scalar, vector.y/scalar)
+    }
+    mag(){
+        return Math.sqrt(Math.pow(this.x, 2)+ Math.pow(this.y, 2))
     }
     static random(minX,maxX, minY, maxY){
         return new Vector( 
@@ -27,17 +38,63 @@ class Barrier{
         this.width = 25 
     }
     update(){
-        this.pos.add(this.vel);
-        this.vel.add(this.acc);
-        this.acc*0;
-
+        this.pos = Vector.add(this.pos, this.vel)
+        this.vel = Vector.add(this.vel, this.acc)
+        this.acc = Vector.mult(this.acc, 1)
+    
         //creates wrap around for 
         if( this.pos.x < 0){
-            this.pos.x = 1080
+            this.pos = Vector.random(1080, 1080, 0, 500)
             this.vel= Vector.random(-0.1, 0, 0, 0);
-            this.acc = new Vector(-.01, 0);
-        }
+            this.acc = new Vector(-0.01, 0);
+        }   
     }
+    checkCollision(player){
+        const v = Vector.sub(this.pos, player.pos)
+        const dist = v.mag()
+        console.log(dist)
+    }
+}
+class EnemyJet{
+    constructor(width, height){
+        this.pos = Vector.random(1030, 1030, 450, 450)
+        this.vel= Vector.random(0, 0, -.01, .03);
+        this.acc = new Vector(0, -.1);
+        this.height =50;
+        this.width = 50;
+    }
+    update(){
+        this.pos = Vector.add(this.pos, this.vel)
+        this.vel = Vector.add(this.vel, this.acc)
+        this.acc*0
+    }
+    handleEdges(width, height){
+        if(this.pos.y <= 0 || this.pos.y >= height+50){
+            this.vel.y = -this.vel.y
+        }
+
+    }
+}
+class Player{
+    constructor(){
+    //creating an asset to move around
+    this.pos = Vector.random(0, 0, 250, 250)
+    this.vel= Vector.random(0, 0, 0, 0);
+    this.acc = new Vector(0, 0);
+    this.height =50;
+    this.width = 50;
+    }
+    update(){
+        this.pos = Vector.add(this.pos, this.vel)
+        this.vel= Vector.add(this.vel, this.acc)
+        this.acc = Vector.mult(this.acc, 0)
+    }
+    checkCollision(player){
+        const v = Vector.sub(this.pos, player.pos)
+        const dist = v.mag()
+        console.log(dist)
+    }
+
 }
 class Canvas{
     constructor(){
@@ -52,18 +109,32 @@ class Canvas{
         requestAnimationFrame(() => this.update());
         }
     setup(){
-        const NUM_BARRIERS = 5;
+        this.enemy = [new EnemyJet(1030,250)]
+        this.player = [new Player(50, 250)]
+        const NUM_BARRIERS = 7;
         this.barrier =[];
-
+        
         for(let i = 0; i < NUM_BARRIERS; i++){
             this.barrier.push(new Barrier(
             randomNumberBetween(0, this.canvas.width),
-            500
+            this.canvas.height
             ))
         }
+
     }
       update() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
+        for(let i = 0; i < this.barrier.length; i++){
+            const current = this.barrier[i]
+            const rest = this.player
+            
+            for (let p of rest){
+                p.checkCollision(current)
+            }        
+        }
+
+        
 
         for(let block of this.barrier){ 
             block.update();
@@ -72,6 +143,24 @@ class Canvas{
             this.ctx.fillRect( block.pos.x, block.pos.y , block.width , block.height );
             this.ctx.fill();
         }
+    //build enemy shape
+        for(let fighter of this.enemy){ 
+            fighter.update();
+            fighter.handleEdges(this.canvas.width, this.canvas.height)
+            this.ctx.fillStyle = '#ff0';
+            this.ctx.beginPath();
+            this.ctx.fillRect( fighter.pos.x, fighter.pos.y , fighter.width , fighter.height );
+            this.ctx.fill();
+        }
+    // build player & hitbox
+        for(let defender of this.player){ 
+            defender.update();
+            this.ctx.fillStyle = '#ff0';
+            this.ctx.beginPath();
+            this.ctx.fillRect(defender.pos.x, defender.pos.y , defender.width , defender.height);
+            this.ctx.fill();
+        }
+
         requestAnimationFrame(() => this.update());
       }
     
@@ -80,62 +169,53 @@ class Canvas{
 new Canvas()
 
 
-//creating a asset to move around
-let mover = document.querySelector('.mover')
-let modifier = 10
-
-window.addEventListener('load', () =>{
-mover.style.top = 0
-mover.style.left = 0
-mover.style.position = 'absolute'
-
-})
 
 
-window.addEventListener('keydown' , (e) =>{
-    keysPressed[e.key] = true;
+
+// window.addEventListener('keydown' , (e) =>{
+//     keysPressed[e.key] = true;
 
 
-    switch(e.key){
-        case 'ArrowUp': 
-            mover.style.top = parseInt(mover.style.top) - modifier + 'px'; 
-            break
-        case 'ArrowDown': 
-            mover.style.top = parseInt(mover.style.top) + modifier + 'px'; 
-            break
-        case 'ArrowRight': 
-            mover.style.left = parseInt(mover.style.left) + modifier + 'px'; 
-            break
-        case 'ArrowLeft': 
-            mover.style.left = parseInt(mover.style.left) - modifier + 'px'; 
-            break   
-        }
-})
+//     switch(e.key){
+//         case 'ArrowUp': 
+//             mover.style.top = parseInt(mover.style.top) - modifier + 'px'; 
+//             break
+//         case 'ArrowDown': 
+//             mover.style.top = parseInt(mover.style.top) + modifier + 'px'; 
+//             break
+//         case 'ArrowRight': 
+//             mover.style.left = parseInt(mover.style.left) + modifier + 'px'; 
+//             break
+//         case 'ArrowLeft': 
+//             mover.style.left = parseInt(mover.style.left) - modifier + 'px'; 
+//             break   
+//         }
+// })
 
-// DIAGONAL DIRECTION CONTROL FOR PLAYER 
-let keysPressed = {}
-window.addEventListener('keydown', (event) =>{
-keysPressed[event.key] = true;
-if (keysPressed['ArrowDown'] && event.key == 'ArrowRight') {
-            mover.style.left = parseInt(mover.style.left)  + modifier + 'px';
-            mover.style.top = parseInt(mover.style.top) + modifier + 'px';
-        }
-else if (keysPressed['ArrowUp'] && event.key == 'ArrowRight') {
-            mover.style.left = parseInt(mover.style.left)  + modifier + 'px';
-            mover.style.top = parseInt(mover.style.top) - modifier + 'px';
-        }
-else if (keysPressed['ArrowDown'] && event.key == 'ArrowLeft') {
-            mover.style.left = parseInt(mover.style.left)  - modifier + 'px';
-            mover.style.top = parseInt(mover.style.top) + modifier + 'px';
-        }
-else if (keysPressed['ArrowLeft'] && event.key == 'ArrowUp') {
-            mover.style.left = parseInt(mover.style.left)  - modifier + 'px';
-            mover.style.top = parseInt(mover.style.top) - modifier + 'px';
-    }
-})
+// // DIAGONAL DIRECTION CONTROL FOR PLAYER 
+// let keysPressed = {}
+// window.addEventListener('keydown', (event) =>{
+// keysPressed[event.key] = true;
+// if (keysPressed['ArrowDown'] && event.key == 'ArrowRight') {
+//             mover.style.left = parseInt(mover.style.left)  + modifier + 'px';
+//             mover.style.top = parseInt(mover.style.top) + modifier + 'px';
+//         }
+// else if (keysPressed['ArrowUp'] && event.key == 'ArrowRight') {
+//             mover.style.left = parseInt(mover.style.left)  + modifier + 'px';
+//             mover.style.top = parseInt(mover.style.top) - modifier + 'px';
+//         }
+// else if (keysPressed['ArrowDown'] && event.key == 'ArrowLeft') {
+//             mover.style.left = parseInt(mover.style.left)  - modifier + 'px';
+//             mover.style.top = parseInt(mover.style.top) + modifier + 'px';
+//         }
+// else if (keysPressed['ArrowLeft'] && event.key == 'ArrowUp') {
+//             mover.style.left = parseInt(mover.style.left)  - modifier + 'px';
+//             mover.style.top = parseInt(mover.style.top) - modifier + 'px';
+//     }
+// })
 
 
-document.addEventListener('keyup', (event) => {
-    delete keysPressed[event.key];
- });
+// document.addEventListener('keyup', (event) => {
+//     delete keysPressed[event.key];
+//  });
 
