@@ -49,8 +49,8 @@ class Barrier{
             this.acc = new Vector(-0.01, 0);
         }   
     }
-    checkCollision(player){
-        const v = Vector.sub(this.pos, player.pos)
+    checkCollision(object){
+        const v = Vector.sub(this.pos, object.pos)
         const dist = v.mag()
         console.log(dist)
     }
@@ -59,7 +59,7 @@ class EnemyJet{
     constructor(width, height){
         this.pos = Vector.random(1030, 1030, 450, 450)
         this.vel= Vector.random(0, 0, -.01, .03);
-        this.acc = new Vector(0, -.1);
+        this.acc = new Vector(0, -.01);
         this.height =50;
         this.width = 50;
     }
@@ -69,7 +69,7 @@ class EnemyJet{
         this.acc*0
     }
     handleEdges(width, height){
-        if(this.pos.y <= 0 || this.pos.y >= height+50){
+        if(this.pos.y <= 0 || this.pos.y >= height){
             this.vel.y = -this.vel.y
         }
 
@@ -89,10 +89,14 @@ class Player{
         this.vel= Vector.add(this.vel, this.acc)
         this.acc = Vector.mult(this.acc, 0)
     }
-    checkCollision(player){
-        const v = Vector.sub(this.pos, player.pos)
+    checkCollision(object){
+        const v = Vector.sub(this.pos, object.pos)
         const dist = v.mag()
         console.log(dist)
+        if(dist <=this.width + object.width || dist <= this.height + object.height){
+        console.log('collision')
+
+        }
     }
 
 }
@@ -106,6 +110,11 @@ class Canvas{
         this.canvas.width = 1080;
         this.canvas.height = 500;
         this.setup();
+
+        this.canvas.addEventListener('mousemove', (e) => {
+            const mousePos = new Vector(e.x, e.y)
+            this.player[0].pos = mousePos
+        })
         requestAnimationFrame(() => this.update());
         }
     setup(){
