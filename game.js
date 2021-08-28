@@ -92,10 +92,9 @@ class Player{
     checkCollision(object){
         const v = Vector.sub(this.pos, object.pos)
         const dist = v.mag()
-        console.log(dist)
-        if(dist <=this.width + object.width || dist <= this.height + object.height){
-        console.log('collision')
 
+    if(dist <=this.width + object.width || dist <= this.height + object.height){
+        console.log('hit')
         }
     }
 
@@ -104,12 +103,11 @@ class Canvas{
     constructor(){
         this.canvas = document.createElement('canvas')
         this.ctx = this.canvas.getContext('2d')
-       
         document.body.appendChild(this.canvas)
 
         this.canvas.width = 1080;
         this.canvas.height = 500;
-        this.setup();
+        this.setup();   
 
         this.canvas.addEventListener('mousemove', (e) => {
             const mousePos = new Vector(e.x, e.y)
@@ -122,29 +120,27 @@ class Canvas{
         this.player = [new Player(50, 250)]
         const NUM_BARRIERS = 7;
         this.barrier =[];
-        
+
         for(let i = 0; i < NUM_BARRIERS; i++){
             this.barrier.push(new Barrier(
             randomNumberBetween(0, this.canvas.width),
             this.canvas.height
             ))
         }
-
     }
       update() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-
+// constant collision detection loop between player and flying objects
         for(let i = 0; i < this.barrier.length; i++){
-            const current = this.barrier[i]
-            const rest = this.player
+            const objectPos = this.barrier[i]
+            const playerPos = this.player
             
-            for (let p of rest){
-                p.checkCollision(current)
+            for (let p of playerPos){
+                p.checkCollision(objectPos)
+                
             }        
-        }
-
-        
-
+        }     
+// build object shape
         for(let block of this.barrier){ 
             block.update();
             this.ctx.fillStyle = '#ff0000';
@@ -176,6 +172,34 @@ class Canvas{
 }
 
 new Canvas()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
