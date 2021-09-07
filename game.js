@@ -32,7 +32,7 @@ class Vector{
 class Barrier{
     constructor(width, height){
         this.pos = Vector.random(1080, 1080, 0, height)
-        this.vel= Vector.random(-0.1, 0, 0, 0);
+        this.vel= Vector.random(-0.1, .01, 0, 0);
         this.acc = new Vector(-.01, 0);
         this.height = 10
         this.width = 25 
@@ -55,21 +55,38 @@ class Barrier{
         console.log(dist)
     }
 }
-class EnemyJet{
-    constructor(width, height){
-        this.pos = Vector.random(1030, 1030, 450, 450)
-        this.vel= Vector.random(0, 0, -.01, .03);
-        this.acc = new Vector(0, -.01);
-        this.height =50;
-        this.width = 50;
+class Projectile{
+    constructor(vector){
+            this.pos = new Vector(25, 275)
+            this.vel = new Vector(0, 0)
+            this.acc = new Vector( 0, 0)
+            this.radius = 3
     }
     update(){
         this.pos = Vector.add(this.pos, this.vel)
         this.vel = Vector.add(this.vel, this.acc)
-        this.acc*0
+        this.acc = Vector.mult(this.acc, 0)
+    }
+    handleEdges(width){
+    if(this.pos.x >= width){
+        this.vel.x = 0
+    }
+    }
+}
+class EnemyJet{
+    constructor(width, height){
+        this.pos = new Vector(1045, 450)
+        this.vel= Vector.random(0, 0, -.01, .03);
+        this.acc = new Vector(0, -1.5);
+        this.radius =  35
+    }
+    update(){
+        this.pos = Vector.add(this.pos, this.vel)
+        this.vel = Vector.add(this.vel, this.acc)
+        this.acc = Vector.mult(this.acc, 0)
     }
     handleEdges(width, height){
-        if(this.pos.y <= 0 || this.pos.y >= height){
+        if(this.pos.y - this.radius <= 0 || this.pos.y + this.radius >= height){
             this.vel.y = -this.vel.y
         }
 
@@ -78,7 +95,7 @@ class EnemyJet{
 class Player{
     constructor(){
     //creating an asset to move around
-    this.pos = Vector.random(0, 0, 250, 250)
+    this.pos = new Vector(0, 250)
     this.vel= Vector.random(0, 0, 0, 0);
     this.acc = new Vector(0, 0);
     this.height =50;
@@ -104,7 +121,8 @@ class Canvas{
         this.canvas = document.createElement('canvas')
         this.ctx = this.canvas.getContext('2d')
         document.body.appendChild(this.canvas)
-
+        
+        this.canvas.style.cursor = 'none'
         this.canvas.width = 1080;
         this.canvas.height = 500;
         this.setup();   
@@ -112,12 +130,24 @@ class Canvas{
         this.canvas.addEventListener('mousemove', (e) => {
             const mousePos = new Vector(e.x, e.y)
             this.player[0].pos = mousePos
+            // this.gun[0].pos.x = e.x +25
+            // this.gun[0].pos.y = e.y +25
         })
+        this.canvas.addEventListener('click', (e) => {
+            this.gun[0].pos.x = e.x +25
+            this.gun[0].pos.y = e.y +25
+            this.gun[0].vel = new Vector(.05, 0)
+            this.gun[0].acc = new Vector(10, 0)
+            
+        })
+
         requestAnimationFrame(() => this.update());
         }
     setup(){
         this.enemy = [new EnemyJet(1030,250)]
         this.player = [new Player(50, 250)]
+        const playerShots = 100;
+        this.gun = []
         const NUM_BARRIERS = 7;
         this.barrier =[];
 
@@ -126,6 +156,9 @@ class Canvas{
             randomNumberBetween(0, this.canvas.width),
             this.canvas.height
             ))
+        }
+        for(let i = 0; i < playerShots; i++){
+            this.gun.push(new Projectile())
         }
     }
       update() {
@@ -154,7 +187,7 @@ class Canvas{
             fighter.handleEdges(this.canvas.width, this.canvas.height)
             this.ctx.fillStyle = '#ff0';
             this.ctx.beginPath();
-            this.ctx.fillRect( fighter.pos.x, fighter.pos.y , fighter.width , fighter.height );
+            this.ctx.arc(fighter.pos.x, fighter.pos.y, fighter.radius,0, 2*Math.PI)
             this.ctx.fill();
         }
     // build player & hitbox
@@ -165,7 +198,15 @@ class Canvas{
             this.ctx.fillRect(defender.pos.x, defender.pos.y , defender.width , defender.height);
             this.ctx.fill();
         }
-
+ //build projectile
+        for(let bullet of this.gun){ 
+            bullet.update();
+            bullet.handleEdges(this.canvas.width)
+            this.ctx.fillStyle = '#00ff00';
+            this.ctx.beginPath();
+            this.ctx.arc(bullet.pos.x, bullet.pos.y, bullet.radius,0, 2*Math.PI)
+            this.ctx.fill();
+        }
         requestAnimationFrame(() => this.update());
       }
     
